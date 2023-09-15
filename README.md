@@ -1,1 +1,1 @@
-# local-ancestral-sequence-embeddings
+# Leveraging ancestral sequence reconstruction for protein representation learning
