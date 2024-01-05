@@ -11,12 +11,18 @@ tokenizer = {
     'W': 18, 'M': 19, 'C': 20
 }
 
-def prepare_fasta(fasta_path: Path):
+def prepare_seqs(
+    fasta_path: Path=None,
+    seq_ls: list=None,
+    ):
     '''
     
     '''
-    fasta_parser = SeqIO.parse(fasta_path, "fasta")
-    seq_ls = [str(seq.seq).upper().rstrip() for seq in fasta_parser]
+    if fasta_path is not None:
+        fasta_parser = SeqIO.parse(fasta_path, "fasta")
+        seq_ls = [str(seq.seq).upper().rstrip() for seq in fasta_parser]
+    elif seq_ls is None:
+        raise ValueError("Must provide .fasta file or sequence list.")
     token_ls= []
     max_seq_len = max([len(seq) for seq in seq_ls])
     for seq in seq_ls:
@@ -29,10 +35,10 @@ def prepare_fasta(fasta_path: Path):
     return padded_token_arr
 
 def process_mask(
-        token_arr: np.ndarray, 
-        vocab_size: int, 
-        mask_pr: float,
-    ):
+    token_arr: np.ndarray, 
+    vocab_size: int, 
+    mask_pr: float,
+):
     '''
     
     '''

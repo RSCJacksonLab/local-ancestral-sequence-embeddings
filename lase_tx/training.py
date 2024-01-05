@@ -1,5 +1,6 @@
-from lase_model import Encoder
-from data_processing import process_data
+from lase_tx.lase_model import Encoder
+from lase_tx.data_processing import process_data
+
 import tensorflow as tf
 from tqdm import tqdm
 import numpy as np
