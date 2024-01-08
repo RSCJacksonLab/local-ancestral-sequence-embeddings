@@ -16,6 +16,9 @@ from sklearn.svm import SVR
 
 from sklearn.metrics import mean_absolute_error, r2_score
 
+
+np.int = int
+
 # search spaces
 rf_space = {
     'n_estimators': Integer(50, 1000),

@@ -4,6 +4,8 @@ import json
 import pickle as pkl
 import time
 import pandas as pd
+import os
+
 from lase_tx import (
     data_processing,
     lase_model
@@ -20,7 +22,7 @@ def embed_seqs(seq_ls, model, batch_size):
     
     '''
     # prepare dataset
-    tokens = data_processing.prepare_seqs(seq_ls)
+    tokens = data_processing.prepare_seqs(seq_ls=seq_ls)
     emb_dset = tf.data.Dataset.from_tensor_slices(tokens).batch(batch_size)
     # extract representations
     representation_ls = []
@@ -97,7 +99,7 @@ def greedy_search(seq_ls, seq_hist, saved_seqs, skl_model, n, model, batch_size,
     return final_df.Sequence.tolist(), final_df.Prediction_history.tolist(), final_df.Prediction.tolist(), other_time, embedding_time, prediction_time, seqs_assessed
 
 
-def in_silico(start_seqs, model, batch_size, skl_model, gens, mut_dict):
+def in_silico(start_seqs, model, batch_size, skl_model, gens, mut_dict, save_dir):
     current_seqs = start_seqs
     seq_hist = [[None]] * len(start_seqs)
     all_seqs = start_seqs
@@ -117,21 +119,6 @@ def in_silico(start_seqs, model, batch_size, skl_model, gens, mut_dict):
             "predictions": predictions,
             "history": seq_hist
         }
-        pd.DataFrame(gen_res).to_csv(f"/home/dana/Documents/2023_PTE_LASR/2022_PTE_LASR/pte-lasr_storage_v2/2023_PTE_LASR/in_silico/lasr_data_wt_v2/LASR_insilico_predictions_{gen}.csv")
-        pd.DataFrame(timing_dict).to_csv(f"/home/dana/Documents/2023_PTE_LASR/2022_PTE_LASR/pte-lasr_storage_v2/2023_PTE_LASR/in_silico/lasr_data_wt_v2/LASR_insilico_timing_{gen}.csv")
-    pd.DataFrame(timing_dict).to_csv("/home/dana/Documents/2023_PTE_LASR/2022_PTE_LASR/pte-lasr_storage_v2/2023_PTE_LASR/in_silico/lasr_data_wt_v2/LASR_insilico_timing.csv")
-        
-device = "cuda"
-sklearn_path = "/home/dana/Documents/2023_PTE_LASR/2022_PTE_LASR/pte-lasr_storage_v2/2023_PTE_LASR/in_silico/rf_lasr005s4_seed4.sav"
-start_seqs = ["MQTRRVVLKSAAAAGTLLGGLAGCASVAGSIGTGDRINTVRGPITISEAGFTLTHEHICGSSAGFLRAWPEFFGSRKALAEKAVRGLRRARAAGVRTIVDVSTFDLGRDVSLLAEVSRAADVHIVAATGLWLDPPLSMRLRSVEELTQFFLREIQYGIEDTGIRAGIIKVATTGKVTPFQELVLRAAARASLATGVPVTTHTAASQRGGEQQAAIFESEGLSPSRVCIGHSDDTDDLSYLTALAARGYLIGLDHIPHSAIGLEDNASASALLGIRSWQTRALLIKALIDQGYMKQILVSNDWLFGFSSYVTNIMDVMDSVNPDGMAFIPLRVIPFLREKGIPQETLAGITVTNPARFLSPTLRAS"]
-
-model = TF2_BERTv3.build_Encoder("/home/dana/Documents/2023_PTE_LASR/2022_PTE_LASR/pte-lasr_storage_v2/2023_PTE_LASR/in_silico/models/4/All_combined_processed_ancs_NR100.fasta")
-model.load_weights("/home/dana/Documents/2023_PTE_LASR/2022_PTE_LASR/pte-lasr_storage_v2/2023_PTE_LASR/in_silico/models/4/weights/PTE_015")
-
-# load sklearn model
-reg_model = pkl.load(open(sklearn_path, "rb"))
-
-
-mut_dict = load_mut_dict("/home/dana/Documents/2023_PTE_LASR/2022_PTE_LASR/pte-lasr_storage_v2/2023_PTE_LASR/in_silico/mutation_dict.json")
-
-csv_res = in_silico(start_seqs, model, 512, reg_model, 25, mut_dict)
+        pd.DataFrame(gen_res).to_csv(os.path.join(save_dir, f"LASE_insilico_predictions_{gen}.csv"))
+        pd.DataFrame(timing_dict).to_csv(os.path.join(save_dir, f"LASE_insilico_timing_{gen}.csv"))
+    pd.DataFrame(timing_dict).to_csv(os.path.join(save_dir, f"LASE_insilico.csv"))

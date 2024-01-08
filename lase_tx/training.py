@@ -112,8 +112,8 @@ def train_encoder(
             logits,
             sample_weight=sample_weight
         )
-        print(
-            f"Test accuracy at epoch {epoch}: {tst_cat_acc.result().numpy()}"
-        )
+    print(
+        f"Test accuracy at epoch {epoch}: {tst_cat_acc.result().numpy()}"
+    )
     
     encoder.save_weights(weight_dir, save_format='tf')

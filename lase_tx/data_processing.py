@@ -68,7 +68,7 @@ def process_data(
     '''
     
     '''
-    token_arr = prepare_fasta(fasta_path)
+    token_arr = prepare_seqs(fasta_path=fasta_path)
     trn_token_arr, tst_token_arr = train_test_split(
         token_arr, 
         test_size=train_split[0]

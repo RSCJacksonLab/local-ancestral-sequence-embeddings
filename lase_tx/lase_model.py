@@ -24,7 +24,7 @@ class PositionalEmbedding(tf.keras.layers.Layer):
         super().__init__()
         self.hidden_dim = hidden_dim
         self.embedding = tf.keras.layers.Embedding(
-            input_dim=vocab_size + 1,
+            input_dim=vocab_size + 2,
             output_dim=hidden_dim,
             input_length=max_seq_len,
             mask_zero=True
