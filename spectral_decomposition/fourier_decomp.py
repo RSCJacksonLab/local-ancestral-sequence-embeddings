@@ -12,7 +12,7 @@ def get_adj_mat(rep_arr):
     '''
     # Make kNN
     dist_arr = spatial.distance_matrix(rep_arr, rep_arr)
-    k = int(np.sqrt(len(y)))
+    k = int(np.sqrt(len(rep_arr)))
     knn_fn = NearestNeighbors(
         n_neighbors=k,
         metric="precomputed"
