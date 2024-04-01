@@ -1,25 +1,30 @@
-import SklearnRegressorOptimisation
-import pickle
+'''
+Script for running Scikit-learn model optimization.
+'''
+
 import json
-import pandas as pd
 import numpy as np
-import argparse
+import pickle
+
 from argparse import ArgumentParser
 from pathlib import Path
-
-from skopt.space import Real, Categorical, Integer
-from sklearn.model_selection import KFold
-
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.ensemble import (
+    RandomForestRegressor,
+    GradientBoostingRegressor
+)
 from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.svm import SVR
-
 from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.model_selection import KFold
+from sklearn.svm import SVR
+from skopt.space import Real, Categorical, Integer
 
+import sklearn_regressors.SklearnRegressorOptimization as SklOpt
 
+# correction for compatibility between Skopt and NumPy.
 np.int = int
 
 # search spaces
+# Random Forest
 rf_space = {
     'n_estimators': Integer(50, 1000),
     'max_depth': Integer(1, 10),
@@ -29,6 +34,7 @@ rf_space = {
     'n_jobs': Categorical([-1]),
 }
 
+# Gradient Boosted Trees
 gbt_space = {
     'n_estimators': Integer(50, 1000),
     'max_depth': Integer(1, 10),
@@ -39,10 +45,12 @@ gbt_space = {
     'subsample': Real(1e-4, 1 - 1e-4),
 }
 
+# Gaussian Process
 gp_space = {
     'alpha': Real(1e-4, 5e-1)
 }
 
+# Support Vector Machine
 svm_space = {
     'epsilon': Real(1e-4, 5e-1),
     'C': Real(1e-4, 100)
@@ -100,7 +108,7 @@ if __name__ == "__main__":
     model, search_space, search_method = model_dict[args.model_name]
 
     # holdout for test scores
-    cv_res, preds = SklearnRegressorOptimisation.holdout_CV(
+    cv_res, preds = SklOpt.holdout_CV(
         kf_inner=kf_inner,
         X=X_trn,
         y=y_trn,
@@ -116,7 +124,7 @@ if __name__ == "__main__":
     np.save(f"{args.save_dir}/test_actual.npy", y_tst)
 
     # cv for optimisation
-    final_model, final_res = SklearnRegressorOptimisation.final_opt(
+    final_model, final_res = SklOpt.final_opt(
         kf=kf_inner, 
         X=X_trn, 
         y=y_trn,

@@ -1,12 +1,14 @@
+'''
+Scikit-learn regressor optimization modules.
+'''
+
 import numpy as np
-import pandas as pd
-from tqdm import tqdm
+
 from typing import (
     Dict,
     Literal
 )
 from numpy.typing import ArrayLike
-
 from sklearn.model_selection import KFold, train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score
 from sklearn.model_selection import GridSearchCV
@@ -20,12 +22,23 @@ def inner_r2_scores(
     model,
 ):
     '''
-    Replicate inner K-folds from search for extraction of R2 scores. 
+    Replicate inner K-folds from search for extraction of R2 scores.
+
+    Arguments:
+    ----------
+    kf : KFold
+        Scikit-learn KFold module used during optimization.
+    X : ArrayLike
+        Training X (input) data.
+    y : ArrayLike
+        Training y (target) data
+    model 
+        Model produced within a given inner-split of interest.
     '''
     trn_r2 = 0
     val_r2 = 0
     kf.get_n_splits(X)
-    for k, (trn_idx, val_idx) in enumerate(kf.split(X)):
+    for _, (trn_idx, val_idx) in enumerate(kf.split(X)):
         X_trn, X_val = X[trn_idx], X[val_idx]
         y_trn, y_val = y[trn_idx], y[val_idx]
         model.fit(X_trn, y_trn)
@@ -44,8 +57,26 @@ def hyperparam_opt(
     search_method: Literal["Grid", "Bayesian"],
 ):
     ''' 
-    Perform exhaustive grid search on given model. 
+    Perform exhaustive grid search on given model.
+
+    Arguments:
+    ----------
+    kf : KFold
+        Scikit-learn KFold module used during optimization.
+    X : ArrayLike
+        Training X (input) data.
+    y : ArrayLike
+        Training y (target) data
+    model 
+        Initialised model for optimizing.
+    search_space : dict
+        Search space compatible with Skopt/Scikit-learn search methods.
+    search_method : str
+        "Grid" for grid search - an exhaustive search over all possible
+        hyperparameters or "Bayesian" for Bayesian hyperparameter
+        optimization with Skopt.
     '''
+    # init grid search with scikit-learn
     if search_method == "Grid":
         search = GridSearchCV(
             model, 
@@ -56,6 +87,7 @@ def hyperparam_opt(
             verbose=1,
             return_train_score=True
         )
+    # init bayesian search with skopt
     elif search_method == "Bayesian":
         optimizer_kwargs = {
             "acq_func": "EI",
@@ -77,16 +109,20 @@ def hyperparam_opt(
             verbose=0,
             return_train_score=True
         )
+    # perform search
     _ = search.fit(X, y)
     search_res_dict = search.cv_results_
+
     # determine best hyperparam set
     best_idx = np.where(search_res_dict["rank_test_score"] == 1)[0][0]
     best_set = search_res_dict["params"][best_idx]
+
     # extract scores 
     trn_mae = search_res_dict["mean_train_score"][best_idx]
     val_mae = search_res_dict["mean_test_score"][best_idx]
     model.set_params(**best_set)
     trn_r2, val_r2 = inner_r2_scores(kf, X, y, model)
+
     return best_set, trn_r2, trn_mae, val_r2, val_mae 
 
 def holdout_CV(    
@@ -100,8 +136,30 @@ def holdout_CV(
     random_state=0
 ):
     '''
-    Holdout cross-validation to estimate test scores/model generalisability after optimisation
-    with standard cross-validation.
+    Holdout cross-validation to estimate test scores/model
+    generalisability after optimisation with standard cross-validation.
+
+    Arguments:
+    ----------
+    kf_inner : KFold
+        Scikit-learn KFold module used during optimization and training.
+    X : ArrayLike
+        Training X (input) data.
+    y : ArrayLike
+        Training y (target) data
+    model 
+        Initialised model for optimizing.
+    search_space : dict
+        Search space compatible with Skopt/Scikit-learn search methods.
+    search_method : str
+        "Grid" for grid search - an exhaustive search over all possible
+        hyperparameters or "Bayesian" for Bayesian hyperparameter
+        optimization with Skopt.
+    return_predictions : bool, default `False`
+        If True, return predictions and true values as a Tuple as well
+        as results. If False, only return results.
+    random_state : int, default `0`
+        Random state for data splits.
     '''
     result_dict = {
         "hyperparams": [],
@@ -109,7 +167,12 @@ def holdout_CV(
         "val_mae": [], "val_r2": [],
         "tst_mae": [], "tst_r2": []
     }
-    X_trn, X_tst, y_trn, y_tst = train_test_split(X, y, test_size=0.2, random_state=random_state)
+    X_trn, X_tst, y_trn, y_tst = train_test_split(
+        X,
+        y,
+        test_size=0.2,
+        random_state=random_state
+    )
     # perform CV optimisation on training data
     best_set, trn_r2, trn_mae, val_r2, val_mae = hyperparam_opt(
         kf_inner,
@@ -137,7 +200,6 @@ def holdout_CV(
     else:
         return result_dict
 
-
 def final_opt(
     kf: KFold, 
     X: ArrayLike,
@@ -147,7 +209,25 @@ def final_opt(
     search_method: Literal["Grid", "Bayesian"],
 ):
     ''' 
-    Final optimisation using cross-validation to produce a final model for use.
+    Final optimisation using cross-validation to produce a final model
+    for use. Repeats the inner-CV on all data to train the final model.
+
+    Arguments:
+    ----------
+    kf : KFold
+        Scikit-learn KFold module used during optimization.
+    X : ArrayLike
+        Training X (input) data.
+    y : ArrayLike
+        Training y (target) data
+    model 
+        Initialised model for optimizing.
+    search_space : dict
+        Search space compatible with Skopt/Scikit-learn search methods.
+    search_method : str
+        "Grid" for grid search - an exhaustive search over all possible
+        hyperparameters or "Bayesian" for Bayesian hyperparameter
+        optimization with Skopt.
     '''
     best_set, trn_r2, trn_mae, val_r2, val_mae = hyperparam_opt(
         kf,

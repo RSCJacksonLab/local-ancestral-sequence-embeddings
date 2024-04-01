@@ -1,9 +1,25 @@
+'''
+Transformer modules and LASE model.
+'''
+
 import numpy as np
 import tensorflow as tf
 
 def positional_encoding(length: int, depth: int):
     '''
-    
+    Generate positional encoding of a given length and depth.
+
+    Arguments:
+    ----------
+    length : int
+        Length of the encoding - maximum sequence length.
+    depth : int
+        Depth/hidden dimension of encoding.
+
+    Returns:
+    --------
+    tf.cast object
+        Object for casting onto the embedded sequence.
     '''
     half_depth = depth/2
     positions = np.arange(length)[:, np.newaxis]
@@ -18,13 +34,23 @@ def positional_encoding(length: int, depth: int):
 
 class PositionalEmbedding(tf.keras.layers.Layer):
     '''
-    
+    Positional embedding layer. Includes embedding and positional
+    encoding.
+
+    Arguments:
+    ----------
+    vocab_size : int
+        Size of vocabulary. 
+    max_seq_len : int
+        Maximum sequence length.
+    hidden_dim : int
+        Hidden dimension of transformer.
     '''
     def __init__(self, vocab_size: int, max_seq_len: int, hidden_dim: int):
         super().__init__()
         self.hidden_dim = hidden_dim
         self.embedding = tf.keras.layers.Embedding(
-            input_dim=vocab_size + 2,
+            input_dim=vocab_size + 2, # +2 for padding and masking tokens
             output_dim=hidden_dim,
             input_length=max_seq_len,
             mask_zero=True
@@ -46,7 +72,14 @@ class PositionalEmbedding(tf.keras.layers.Layer):
     
 class GlobalAttention(tf.keras.layers.Layer):
     '''
+    Multi-head attention layer.
     
+    Arguments:
+    ----------
+    num_heads : int
+        Number of attention heads. 
+    hidden_dim : int
+        Number of hidden dimensions.
     '''
     def __init__(self, num_heads: int, hidden_dim: int):
         super().__init__()
@@ -65,7 +98,14 @@ class GlobalAttention(tf.keras.layers.Layer):
     
 class FeedForward(tf.keras.layers.Layer):
     '''
-    
+    Feed-forward layer - linear -> ReLU -> linear w/ dropout.
+
+    Arguments:
+    ----------
+    hidden_dim : int
+        Number of hidden dimensions.
+    dropout_pr : float 
+        Dropout probability.
     '''
     def __init__(self, hidden_dim: int, dropout_pr: float):
         super().__init__()
@@ -84,7 +124,17 @@ class FeedForward(tf.keras.layers.Layer):
     
 class EncoderLayer(tf.keras.layers.Layer):
     '''
-    
+    Encoding layer - multi-head attention followed by a feed-forward
+    layer.
+
+    Arguments:
+    ----------
+    hidden_dim : int
+        Number of hidden dimensions.
+    num_heads : int
+        Number of attention heads. 
+    dropout_pr : float 
+        Dropout probability.
     '''
     def __init__(self, hidden_dim: int, num_heads: int, dropout_pr: float):
         super().__init__()
@@ -98,7 +148,22 @@ class EncoderLayer(tf.keras.layers.Layer):
     
 class Encoder(tf.keras.Model):
     '''
-    
+    LASE Encoder model. 
+
+    Arguments:
+    ----------
+    n_layers : int
+        Number of transformer layers in the encoder.
+    hidden_dim : int
+        Number of hidden dimensions.
+    num_heads : int
+        Number of attention heads. 
+    vocab_size : int
+        Size of vocabulary. 
+    max_seq_len : int
+        Maximum sequence length.
+    dropout_pr : float 
+        Dropout probability.   
     '''
     def __init__(
         self,
