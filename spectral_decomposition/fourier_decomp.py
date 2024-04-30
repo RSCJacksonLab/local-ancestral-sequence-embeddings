@@ -1,4 +1,7 @@
-from ctypes import Array
+'''
+Graph Fourier Transforms + Dirichlet Energu calculations
+'''
+
 import numpy as np
 
 from numpy.typing import ArrayLike
