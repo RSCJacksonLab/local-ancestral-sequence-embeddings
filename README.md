@@ -10,7 +10,7 @@ All scripts were run using Python 3.8.17 and packages listed in requirements.txt
 ## File overview
 
 ### Data - `data`
-Contains the mutation dictionary used for evolution as well as the regressor dataset.
+Contains the mutation dictionary used for evolution as well as the regressor dataset. Data used in ancestral sequence reconstruction,for PTE and His3p, including extant sequences, ancestral sequences and phylogenetic trees are stored in the directory `phylogenetic_data`.
 
 ### Evolution - `evolution`
 Contains Python modules for timed in silico evolution using LASE. 
