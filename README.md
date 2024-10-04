@@ -5,7 +5,9 @@ Learned ancestral sequence embeddings (LASE) are protein embeddings derived from
 This repository contains the script used for training a transformer for LASE. It contains raw script for training the language model, training scikit learn regressors on saved representations and evaluating the ruggedness of landscapes resulting from these representations. 
 
 ## Python environment
-All scripts were run using Python 3.8.17 and packages listed in requirements.txt.
+All scripts (with exception of LoRA fine-tuning) were run using Python 3.8.17 and packages listed in requirements.txt. 
+
+Code for LoRA fine-tuning of ESM was run using Python 3.11.4 and packages listed in lora_requirements.txt.
 
 ## File overview
 
