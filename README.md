@@ -1,5 +1,7 @@
 # Learned ancestral sequence embeddings
 
+This repository accompanies our paper: [Leveraging ancestral sequence reconstruction for protein representation learning](https://www.nature.com/articles/s42256-024-00935-2).
+
 Learned ancestral sequence embeddings (LASE) are protein embeddings derived from training a light-weight language model on ancestral protein sequence data.
 
 This repository contains the script used for training a transformer for LASE. It contains raw script for training the language model, training scikit learn regressors on saved representations and evaluating the ruggedness of landscapes resulting from these representations. 
